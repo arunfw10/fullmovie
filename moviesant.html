@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html >
+    
+    <style>
+        .hide {
+    display: none !important;
+}
+
+nav {
+    height: 5rem;
+    background: #040c52;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+#logo > img {
+    margin-left: 1rem;
+    width: 4rem;
+    cursor: pointer;
+    
+}
+
+#not-found{
+    text-align: center;
+    font-size: 10rem;
+    font-family: 'Zen Tokyo Zoo', cursive;
+    color: red;
+    cursor: default;
+}
+
+#results {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-gap: 2rem;
+    margin: 1rem;
+}
+#results > div {
+    cursor: pointer;
+}
+
+#results img {
+    height : 220px;
+    width: 100%;
+}
+#results h2 {
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+#search-box {
+    width: 35rem;
+    height: 2.5rem;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0.5rem;
+}
+#search-box > img {
+    width: 2rem;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+#search-box > input {
+    width: 20rem;
+    outline: none;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 0.5rem;
+}
+#single-result {
+    display: flex;
+    cursor: default;
+}
+#movie-title{
+    display: inline-block;
+}
+#single-result > div {
+    width: 50%;
+    margin-top: 1rem;
+}
+h1 {
+    margin: 0 0 2rem 0;
+    font-size: 1.5rem;
+    letter-spacing: 0.1rem;
+}
+#poster-div {
+    display: flex;
+    width: 40%;
+    margin-right: -2rem;
+}
+#poster-img {
+    margin: auto;
+    height: 100%;
+}
+
+#single-result > div:nth-child(2){
+    position: relative;
+}
+
+#back-btn {
+    position: absolute;
+    bottom: 0;
+    cursor: pointer;
+    border: 1px solid #000;
+    padding: 0.5rem 1rem;
+    background: #040c52;
+    color: #fff;
+}
+
+        </style>
+    <body>
+        <nav>
+            <div id="logo">
+                <img src="https://img-premium.flaticon.com/png/512/3499/premium/3499651.png?token=exp=1627540809~hmac=f677ac9af0657f7d56f1e806bed89400" alt="flimsit-logo" />
+            </div>
+            <div>
+                <div id="search-box">
+                    <input
+                        type="text"
+                        id="movie-name-input"
+                        placeholder="Search Movie Name"
+                    />
+                    <img
+                        onclick="getMoviesBySearch()"
+                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Search_Icon.svg/500px-Search_Icon.svg.png"
+                        alt="search-icon"
+                    />
+                </div>
+            </div>
+            <div style="margin-right: 1rem; color: #fff; cursor: pointer">
+                About US
+            </div>
+        </nav>
+        <div id="not-found"></div>
+        <section id="results"></section>
+        <section id="single-result" class="hide">
+            <div id="poster-div">
+                <img
+                    id="poster-img"
+                    src="https://m.media-amazon.com/images/M/MV5BNjM0NTc0NzItM2FlYS00YzEwLWE0YmUtNTA2ZWIzODc2OTgxXkEyXkFqcGdeQXVyNTgwNzIyNzg@._V1_SX300.jpg"
+                    alt="movie poster"
+                />
+            </div>
+            <div>
+                <h1 id="movie-title">Movie Name</h1>
+                <span id="recommended-tag" title="Recommended Movie">🏷️</span>
+                <p>Genre : <span id="genre">Action, Adventure, Comedy</span></p>
+                <p>Director : <span id="director">James Gunn</span></p>
+                <p>Language : <span id="language">English</span></p>
+                <p>
+                    Writer :
+                    <span id="writer"
+                        >James Gunn, Dan Abnett, Andy Lanning</span
+                    >
+                </p>
+                <p>Released On : <span id="released">05 May 2017</span></p>
+                <p>Runtime : <span id="runtime">136 min</span></p>
+                <p>imdbRating : <span id="imdbRating">7.6</span>/10</p>
+                <p>Country : <span id="country">United States</span></p>
+                <div id="back-btn" onclick="goBack()">⇐ Back</div>
+            </div>
+        </section>
+    </body>
+</html>
+
+<script >
+    let input = document.getElementById("movie-name-input");
+let results = document.getElementById("results");
+
+let singleSection = document.getElementById("single-result");
+let posterImg = document.getElementById("poster-img");
+let movieTitle = document.getElementById("movie-title");
+let genre = document.getElementById("genre");
+let director = document.getElementById("director");
+let language = document.getElementById("language");
+let writer = document.getElementById("writer");
+let released = document.getElementById("released");
+let runtime = document.getElementById("runtime");
+let imdbRating = document.getElementById("imdbRating");
+let country = document.getElementById("country");
+
+let notFound = document.getElementById("not-found");
+let recommendedTag = document.getElementById("recommended-tag");
+
+async function getMoviesBySearch() {
+    let res = await fetch(
+        `https://www.omdbapi.com/?s=${input.value}&apikey=ad581cd3`
+    );
+    let obj = await res.json();
+    let searchResultArray = obj.Search;
+    console.log('searchResultArray:', searchResultArray)
+    
+    if (searchResultArray === undefined) {
+        notFound.removeAttribute("class", "hide");
+        notFound.innerHTML = "404";
+        results.setAttribute("class", "hide");
+        singleSection.setAttribute("class", "hide");
+    } else {
+        notFound.setAttribute("class", "hide");
+        results.innerHTML = null;
+        searchResultArray.forEach(function (el) {
+            if (el.Type === "movie" && el.Poster !== "N/A") {
+                getMovies(el);
+            }
+        });
+        setTimeout(function () {
+            results.removeAttribute("class", "hide");
+            singleSection.setAttribute("class", "hide");
+            recommendedTag.setAttribute("class", "hide");
+        }, 1000);
+    }
+
+}
+
+function getMovies(el) {
+    // console.log("el:", el);
+
+    let div = document.createElement("div");
+    let imdbID = el.imdbID;
+    div.addEventListener("click", function () {
+        async function getMovie() {
+            let resp = await fetch(
+                `https://www.omdbapi.com/?i=${imdbID}&apikey=ad581cd3`
+            );
+            let objEl = await resp.json();
+
+            posterImg.src = objEl.Poster;
+            movieTitle.innerHTML = objEl.Title;
+            genre.innerHTML = objEl.Genre;
+            director.innerHTML = objEl.Director;
+            language.innerHTML = objEl.Language;
+            writer.innerHTML = objEl.Writer;
+            released.innerHTML = objEl.Released;
+            runtime.innerHTML = objEl.Runtime;
+            imdbRating.innerHTML = objEl.imdbRating;
+            country.innerHTML = objEl.Country;
+            recommendedTag.setAttribute("class", "hide");
+            if ((objEl.imdbRating / 1) > 8.5) {
+                recommendedTag.removeAttribute("class", "hide");
+            }
+        }
+        getMovie();
+        setTimeout(function () {
+            results.setAttribute("class", "hide");
+            singleSection.removeAttribute("class", "hide");
+        }, 1000);
+    });
+
+    let img = document.createElement("img");
+    let h2 = document.createElement("h2");
+    img.src = el.Poster;
+    h2.innerHTML = el.Title;
+
+    results.append(div);
+    div.append(img, h2);
+}
+
+function goBack() {
+    results.removeAttribute("class", "hide");
+    singleSection.setAttribute("class", "hide");
+}
+</script>
